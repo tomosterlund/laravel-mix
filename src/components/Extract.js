@@ -130,7 +130,20 @@ class Extract {
             );
         }
 
-        return new RegExp(`${pattern}(${extra})`, 'i');
+        const regex = new RegExp(`${pattern}(${extra})`, 'i');
+
+        return mod => {
+            const request = mod.rawRequest;
+
+            if (Array.isArray(libraries) && libraries.includes(request)) {
+                return true;
+            }
+
+            const name = mod.nameForCondition();
+
+            // TODO: This causes the vendor backend+frontend test to fail
+            return name && regex.test(name);
+        };
     }
 }
 
