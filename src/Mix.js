@@ -82,21 +82,27 @@ class Mix {
      */
     async load() {
         // Pull in the user's mix config file
-        const mod = require(this.paths.mix())
+        // An ESM import here allows a user's mix config
+        // to be an ESM module and use top-level await
+        const mod = await import(this.paths.mix());
+
+        // If the user is exporting a function then the user has likely not
+        // imported mix and it has not "booted" because of this
+        // We work around this by explicitly booting mix (if it hasn't been) after loading the config
+
+        // Because this can run in common js environments we cannot make this process async (nor should we ever need to)
+        this.boot();
+
+        // Allow the user to `export default function (mix) { … }` from their config file
+        if (typeof mod.default === 'function') {
+            await mod.default(this.api)
+        }
     }
 
     /**
      * @internal
      */
     async build() {
-        if (!this.booted) {
-            console.warn(
-                'Mix was not set up correctly. Please ensure you import or require laravel-mix in your mix config.'
-            );
-
-            this.boot();
-        }
-
         return this.webpackConfig.build();
     }
 

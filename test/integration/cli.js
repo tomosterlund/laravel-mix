@@ -29,11 +29,27 @@ test('Webpack errors result in non-zero exit code', async t => {
     t.not(0, code);
 });
 
-test('An empty mix file results in a successful build with a warning', async t => {
+test('An empty mix file results in a successful build', async t => {
     const { code, stderr } = await mix(['--mix-config=webpack.mix.empty']);
 
+    // TODO: This should show a warning that nothing is being compiled
+
     t.is(0, code);
-    t.regex(stderr, /not set up correctly/i);
+    t.is(stderr, '');
+});
+
+test('ESM mix files are supported', async t => {
+    const { code, stderr } = await mix(['--mix-config=webpack.mix.esm']);
+
+    t.is(0, code);
+    t.is('', stderr);
+});
+
+test('ESM mix files are supported with default functions', async t => {
+    const { code, stderr } = await mix(['--mix-config=webpack.mix.esm.fn']);
+
+    t.is(0, code);
+    t.is('', stderr);
 });
 
 /*
