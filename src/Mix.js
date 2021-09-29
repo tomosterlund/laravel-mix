@@ -78,6 +78,14 @@ class Mix {
     }
 
     /**
+     * Load the user's Mix config
+     */
+    async load() {
+        // Pull in the user's mix config file
+        const mod = require(this.paths.mix())
+    }
+
+    /**
      * @internal
      */
     async build() {
