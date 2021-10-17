@@ -29,7 +29,7 @@ class ConcatenateFilesTask extends Task {
      * Handle when a relevant source file is changed.
      */
     onChange(updatedFile) {
-        this.merge();
+        return this.merge();
     }
 }
 
