@@ -1,7 +1,11 @@
 let Task = require('./Task');
 let FileCollection = require('../FileCollection');
 const { FileGlob } = require('./FileGlob');
+const File = require('../File');
 
+/**
+ * @extends {Task<{ src: string|string[], output: File, babel: boolean, ignore?: string[] }>}
+ */
 class ConcatenateFilesTask extends Task {
     /**
      * Run the task.
@@ -28,7 +32,7 @@ class ConcatenateFilesTask extends Task {
     /**
      * Handle when a relevant source file is changed.
      */
-    onChange(updatedFile) {
+    onChange() {
         return this.merge();
     }
 }
