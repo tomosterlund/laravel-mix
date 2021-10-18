@@ -1,6 +1,5 @@
 let { Chunks } = require('./Chunks');
 let buildConfig = require('./config');
-let ComponentRegistrar = require('./components/ComponentRegistrar');
 let Components = require('./components/Components');
 let Dependencies = require('./Dependencies');
 let Dispatcher = require('./Dispatcher');
@@ -12,6 +11,8 @@ let Paths = require('./Paths');
 let WebpackConfig = require('./builder/WebpackConfig');
 let { Resolver } = require('./Resolver');
 const { BuildGroup } = require('./Build/BuildGroup');
+const { ComponentManager } = require('./Build/ComponentManager');
+const { BuildContext } = require('./Build/BuildContext');
 
 /** @typedef {import("./tasks/Task")} Task */
 
@@ -39,10 +40,8 @@ class Mix {
         this.components = new Components();
         this.manifest = new Manifest();
 
-        // TODO: Rework the way registration works
-        // Registration should happen only once at Mix object level
-        // API initialization should happen per build context
-        this.registrar = new ComponentRegistrar(this);
+        this.registrar = new ComponentManager(this);
+
         this.webpackConfig = new WebpackConfig(this);
 
         this.hot = new HotReloading(this);
@@ -144,7 +143,7 @@ class Mix {
      * @internal
      */
     async installDependencies() {
-        await this.dispatch('internal:gather-dependencies');
+        await this.registrar.collectDeps();
 
         Dependencies.installQueued();
     }
@@ -167,6 +166,7 @@ class Mix {
         this.initialized = true;
 
         // And then kick things off
+        await this.registrar.init();
         await this.dispatch('init', this);
     }
 
@@ -311,6 +311,14 @@ class Mix {
      */
     get currentGroup() {
         return this.#current[this.#current.length - 1];
+    }
+
+    /**
+     * @internal
+     * @type {BuildContext}
+     */
+    get currentContext() {
+        return this.currentGroup.context;
     }
 
     /**

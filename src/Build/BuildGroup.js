@@ -20,7 +20,8 @@ exports.BuildGroup = class BuildGroup {
         this.name = name;
         this.mix = mix;
         this.callback = callback;
-        this.context = new BuildContext(mix);
+        this.context = new BuildContext(this);
+        this.components = mix.registrar;
     }
 
     /**
@@ -47,7 +48,11 @@ exports.BuildGroup = class BuildGroup {
      * @internal
      */
     async setup() {
-        return this.whileCurrent(() => this.callback(this.context.api, this.context));
+        return this.whileCurrent(() => {
+            this.components.installAll();
+
+            return this.callback(this.context.api, this.context);
+        });
     }
 
     /**

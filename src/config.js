@@ -1,5 +1,6 @@
 // @ts-check
 
+const { extend } = require('lodash');
 const yargs = require('yargs/yargs');
 const argv = yargs(process.argv.slice(2))
     .options({
@@ -15,6 +16,7 @@ const argv = yargs(process.argv.slice(2))
 /**
  *
  * @param {import("./Mix")} mix
+ * @returns {Record<string, any>}
  */
 module.exports = function (mix) {
     // TODO: Remove in Mix 7 -- Here for backwards compat if a plugin requires this file
@@ -229,7 +231,7 @@ module.exports = function (mix) {
         /**
          * Merge the given options with the current defaults.
          *
-         * @param {object} options
+         * @param {Record<string, any>} options
          */
         merge(options) {
             Object.keys(options).forEach(key => {

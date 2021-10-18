@@ -7,22 +7,22 @@ const { Manifest } = require('./Manifest');
  */
 exports.BuildContext = class BuildContext {
     /**
-     * @param {import('../Mix')} mix
+     * @param {import('./BuildGroup').BuildGroup} group
      */
-    constructor(mix) {
+    constructor(group) {
         /** @internal */
-        this.mix = mix;
+        this.group = group;
 
         /**
          * @public
-         * @type {typeof mix.config}
+         * @type {typeof group.mix.config}
          */
-        this.config = Object.create(mix.config);
+        this.config = Object.create(group.mix.config);
 
         /**
          * @public
          */
-        this.chunks = new Chunks(mix);
+        this.chunks = new Chunks(group.mix);
 
         /**
          * @public
@@ -30,7 +30,7 @@ exports.BuildContext = class BuildContext {
         this.manifest = new Manifest();
 
         /**
-         * @type {Task[]}
+         * @type {Task<any>[]}
          * @internal
          **/
         this.tasks = [];
@@ -47,7 +47,7 @@ exports.BuildContext = class BuildContext {
      * Queue up a new task.
      * TODO: Add a "stage" to tasks so they can run at different points during the build
      *
-     * @param {Task} task
+     * @param {Task<any>} task
      * @param {{ when: "before" | "during" | "after"}} options
      */
     addTask(task, options) {
@@ -58,14 +58,6 @@ exports.BuildContext = class BuildContext {
      * @returns {import("../../types/index")}
      */
     get api() {
-        if (!this._api) {
-            this._api = this.mix.registrar.installAll();
-
-            // @ts-ignore
-            this._api.inProduction = () => this.config.production;
-        }
-
-        // @ts-ignore
-        return this._api;
+        return this.group.components.api;
     }
 };

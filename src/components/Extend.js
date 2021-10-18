@@ -1,28 +1,15 @@
-class Extend {
+const { concat } = require('lodash');
+const { Component } = require('./Component');
+
+class Extend extends Component {
     /**
      * Register the component.
      *
-     * @param {string} name
-     * @param {Component} component
+     * @param {string | string[]} name
+     * @param {import('../../types/component').Component} component
      */
     register(name, component) {
-        if (typeof component !== 'function') {
-            component.name = () => name;
-
-            return Mix.registrar.install(component);
-        }
-
-        Mix.registrar.install({
-            name: () => name,
-
-            register(...args) {
-                this.args = args;
-            },
-
-            webpackConfig(config) {
-                component.call(this, config, ...this.args);
-            }
-        });
+        this.context.group.mix.registrar.add(component, concat([], name));
     }
 }
 
