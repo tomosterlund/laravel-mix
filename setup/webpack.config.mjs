@@ -3,6 +3,9 @@ import Mix from '../src/Mix.js';
 export default async function () {
     const mix = Mix.shared;
 
+    // Boot mix
+    await mix.boot();
+
     // Load the user's mix config
     await mix.load();
 

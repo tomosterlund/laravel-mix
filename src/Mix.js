@@ -64,8 +64,6 @@ class Mix {
         /** @type {Task[]} */
         this.tasks = [];
 
-        this.booted = false;
-
         this.bundlingJavaScript = false;
 
         /**
@@ -108,13 +106,6 @@ class Mix {
         // to be an ESM module and use top-level await
         const mod = await import(this.paths.mix());
 
-        // If the user is exporting a function then the user has likely not
-        // imported mix and it has not "booted" because of this
-        // We work around this by explicitly booting mix (if it hasn't been) after loading the config
-
-        // Because this can run in common js environments we cannot make this process async (nor should we ever need to)
-        this.boot();
-
         // Allow the user to `export default function (mix) { … }` from their config file
         if (typeof mod.default === 'function') {
             await this.currentGroup.whileCurrent(mod.default);
@@ -126,14 +117,6 @@ class Mix {
      * @returns {Promise<import('webpack').Configuration[]>}
      */
     async build() {
-        if (!this.booted) {
-            console.warn(
-                'Mix was not set up correctly. Please ensure you import or require laravel-mix in your mix config.'
-            );
-
-            this.boot();
-        }
-
         return await Promise.all(this.buildableGroups.map(group => group.config()));
     }
 
@@ -143,27 +126,18 @@ class Mix {
 
     /**
      * @internal
-     * @returns {Mix}
      */
-    boot() {
-        if (this.booted) {
-            return this;
-        }
-
-        this.booted = true;
-
+    async boot() {
         // Load .env
         Dotenv.config();
 
         // If we're using Laravel set the public path by default
-        if (this.sees('laravel')) {
+        if (File.exists('./artisan')) {
             this.config.publicPath = 'public';
         }
 
         this.listen('init', () => this.hot.record());
         this.makeCurrent();
-
-        return this;
     }
 
     /**

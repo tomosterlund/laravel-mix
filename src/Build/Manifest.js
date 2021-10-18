@@ -18,6 +18,10 @@ exports.Manifest = class Manifest {
         return new Manifest(records);
     }
 
+    /**
+     *
+     * @returns {Record<string, string>}
+     */
     get() {
         return Object.fromEntries(
             Object.entries(this.records).sort((a, b) => a[0].localeCompare(b[0]))

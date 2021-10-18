@@ -40,10 +40,6 @@ exports.BuildGroup = class BuildGroup {
      * @internal
      */
     async config() {
-        // TODO: We should run setup as early as possible
-        // Maybe in Mix.init?
-        await this.setup();
-
         return new WebpackConfig(this.mix).build();
     }
 
