@@ -96,6 +96,11 @@ export function cli(opts) {
              * @param {string} script
              **/
             assertScript(t, script) {
+                script = script.replace(
+                    /\[bin\]/,
+                    path.resolve(`${__dirname}/../../bin`)
+                );
+
                 t.is(stdout.script, script);
             },
 
