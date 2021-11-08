@@ -10,8 +10,9 @@ export let Mix;
 /** @type {import('../../src/Mix')['api']} */
 export let mix;
 
-test.beforeEach(() => {
-    Mix = new MixClass().boot();
+test.beforeEach(async () => {
+    Mix = new MixClass();
+    await Mix.boot();
     mix = Mix.api;
 
     fs.ensureDirSync(`test/fixtures/app/dist`);
