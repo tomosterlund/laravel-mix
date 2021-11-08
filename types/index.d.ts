@@ -299,9 +299,18 @@ interface Api {
     vue(config?: VueConfig): Api;
 }
 
+interface ApiCallback {
+    (api: Api): void | Promise<void>;
+}
+
+// declare function doesn't work right here
+declare type defineConfig = (fn: ApiCallback) => ApiCallback;
+
+type Component = MixComponent;
+
 declare const exports: Api;
 declare namespace exports {
-    export { Api, ReactConfig, VueConfig };
+    export { defineConfig, Api, ReactConfig, VueConfig };
 }
 
 declare global {
