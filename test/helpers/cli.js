@@ -7,6 +7,7 @@ const execAsync = promisify(exec);
 /**
  * @typedef {object} CliResult
  * @property {Error|null} error
+ * @property {number} elapsed
  * @property {number} code
  * @property {string} stdout
  * @property {string} stderr
@@ -39,6 +40,8 @@ export function cli(opts) {
     async function run(args, onRun) {
         let cmd = [`node ${path.resolve('./bin/cli')}`, ...args];
 
+        const start = process.hrtime.bigint();
+
         const promise = execAsync(cmd.join(' '), {
             cwd,
             env: {
@@ -52,18 +55,22 @@ export function cli(opts) {
 
         try {
             const { stdout, stderr } = await promise;
+            const elapsed = Number(process.hrtime.bigint() - start) / 1_000_000;
 
             return {
                 error: null,
+                elapsed,
                 code: 0,
                 stdout,
                 stderr
             };
         } catch (error) {
             const { code, stdout, stderr } = error;
+            const elapsed = Number(process.hrtime.bigint() - start) / 1_000_000;
 
             return {
                 error,
+                elapsed,
                 code: code === null || code === undefined ? 1 : code,
                 stdout,
                 stderr
