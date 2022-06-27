@@ -1,26 +1,33 @@
-const AutomaticComponent = require('./AutomaticComponent');
-const webpack = require('webpack');
+const { Component } = require('./Component');
 
-class LegacyNodePolyfills extends AutomaticComponent {
+module.exports = class LegacyNodePolyfills extends Component {
+    passive = true;
+
     dependencies() {
-        return Config.legacyNodePolyfills ? ['process', 'buffer'] : [];
+        return this.context.config.legacyNodePolyfills ? ['process', 'buffer'] : [];
     }
 
     webpackPlugins() {
-        if (!Config.legacyNodePolyfills) {
+        if (!this.context.config.legacyNodePolyfills) {
             return [];
         }
 
+        const { ProvidePlugin } = require('webpack');
+
         return [
-            new webpack.ProvidePlugin({
+            new ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],
                 process: 'process/browser.js'
             })
         ];
     }
 
+    /**
+     *
+     * @returns {import('webpack').Configuration}
+     */
     webpackConfig() {
-        if (!Config.legacyNodePolyfills) {
+        if (!this.context.config.legacyNodePolyfills) {
             return {
                 resolve: {
                     fallback: {
@@ -34,12 +41,10 @@ class LegacyNodePolyfills extends AutomaticComponent {
         return {
             resolve: {
                 fallback: {
-                    buffer: Mix.resolve('buffer/'),
-                    process: Mix.resolve('process/browser.js')
+                    buffer: this.context.resolve('buffer/'),
+                    process: this.context.resolve('process/browser.js')
                 }
             }
         };
     }
-}
-
-module.exports = LegacyNodePolyfills;
+};

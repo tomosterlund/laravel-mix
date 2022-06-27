@@ -18,6 +18,13 @@ class File {
         this.segments = this.parse();
     }
 
+    /** @internal */
+    refresh() {
+        this.segments = this.parse();
+
+        return this;
+    }
+
     /**
      * Static constructor.
      *
@@ -41,6 +48,13 @@ class File {
      */
     static exists(file) {
         return fs.existsSync(file);
+    }
+
+    /**
+     * Determine if the given file exists.
+     */
+    exists() {
+        return fs.existsSync(this.path());
     }
 
     normalizedOutputPath() {
@@ -231,7 +245,7 @@ class File {
      * Create all nested directories.
      */
     makeDirectories() {
-        fs.ensureDirSync(this.base());
+        fs.mkdirSync(this.base(), { mode: 0o777, recursive: true });
 
         return this;
     }
@@ -245,6 +259,18 @@ class File {
         fs.copySync(this.path(), destination);
 
         return this;
+    }
+
+    /**
+     * Copy the current file to a new location.
+     *
+     * @param {string} destination
+     * @internal
+     */
+    async copyToAsync(destination) {
+        await fs.copy(this.path(), destination, {
+            recursive: true
+        });
     }
 
     /**
@@ -346,6 +372,39 @@ class File {
 
         // 3. Pevious logic: No extension & does not end in a wildcard
         return !parsed.ext && !parsed.name.endsWith('*');
+    }
+
+    /**
+     * @param {object} param0
+     * @param {boolean} [param0.hidden]
+     *
+     * @returns {Promise<File[]>}
+     */
+    async listContentsAsync({ hidden = false }) {
+        const contents = await fs.promises.readdir(this.path(), {
+            withFileTypes: true
+        });
+
+        const files = await Promise.all(
+            contents.map(async entry => {
+                if (!hidden && entry.name.startsWith('.')) {
+                    return [];
+                }
+
+                // We don't want to list any special devices
+                // symlinks, etc…
+                // TODO: This needs a test
+                if (!entry.isFile() && !entry.isDirectory()) {
+                    return [];
+                }
+
+                let file = new File(`${this.path()}/${entry.name}`);
+
+                return entry.isDirectory() ? file.listContentsAsync({ hidden }) : [file];
+            })
+        );
+
+        return files.flat();
     }
 
     // TODO: Can we refactor this to remove the need for implicit global? Or does this one make sense to leave as is?

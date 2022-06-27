@@ -7,7 +7,7 @@ on:
     push:
         branches: [master]
     pull_request:
-        branches: [master]
+        branches: [master, next]
 
 jobs:
     build:
@@ -20,7 +20,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                node-version: [12.x, 16.x, 17.x]
+                node-version: [12.x, 16.x, 17.x, 18.x]
                 os: [ubuntu-latest, windows-latest]
 
         steps:
@@ -29,10 +29,11 @@ jobs:
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v2
               with:
+                  cache: 'npm'
                   node-version: ${{ matrix.node-version }}
 
             - name: Install Dependencies
-              run: npm install --legacy-peer-deps
+              run: npm ci --legacy-peer-deps
 
             - name: Run Tests
               env:
